@@ -7,4 +7,4 @@ createRoot(document.getElementById('contenedor')!).render(
   <StrictMode>
     <App />
   </StrictMode>
-)
+);
