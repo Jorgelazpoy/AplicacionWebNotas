@@ -1,11 +1,10 @@
 import { useState } from "react";
 
-type Nota ={
+type Nota = {
   id: number;
   contenido: string;
   resumen: string;
 };
-
 
 function App() {
   const [notas, setNotas] = useState<Nota[]>([]);
@@ -13,33 +12,52 @@ function App() {
   const addNota = () => {
     const nuevaNota: Nota = {
       id: Date.now(),
-      contenido: "Contenido de la nota",
-      resumen: "Resumen de la nota",
+      contenido: "",
+      resumen: "",
     };
     setNotas([...notas, nuevaNota]);
   };
 
   const actualizarNota = (id: number, contenido: string) => {
     setNotas(
-      notas.map(nota => 
-         nota.id === id ? { ...nota, contenido } : nota
-      )
-    );
-  };
-  const resumirNota = (id: number) => {
-      const nota = notas.find(n => n.id === id);
-    if (!nota || !nota.contenido) return alert("Escribe una nota primero");
-    const resumen = "Resumen con ia: "; // Conectar con api ia.
-
-    setNotas(
-      notas.map(n =>
-        n.id === id ? { ...n, resumen } : n
+      notas.map(nota =>
+        nota.id === id ? { ...nota, contenido } : nota
       )
     );
   };
 
-  return(
-     <main className="container">
+  // CONECTAR API IA
+  const resumirNota = async (id: number) => {
+    const nota = notas.find(n => n.id === id);
+    if (!nota || !nota.contenido) {
+      alert("Escribe una nota primero");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3001/resumir", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ texto: nota.contenido })
+      });
+
+      const data = await response.json();
+
+      setNotas(
+        notas.map(n =>
+          n.id === id ? { ...n, resumen: data.resumen } : n
+        )
+      );
+    } catch (error) {
+      alert("Error al conectar con la IA");
+      console.error(error);
+    }
+  };
+
+  return (
+    <main className="container">
       <header className="app-header">
         <h2>📝 Mis notas</h2>
         <button onClick={addNota}>Agregar nota</button>
@@ -71,4 +89,5 @@ function App() {
   );
 }
 
-export default App
+export default App;
+
